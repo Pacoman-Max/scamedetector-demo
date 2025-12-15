@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Scam Detector — DEMO / Simulation</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --accent:#7dd3fc;
+      --danger:#ff6b6b;
+      --muted:#94a3b8;
+    }
+    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+    body{
+      background: linear-gradient(180deg,#071023 0%, #08132b 100%);
+      color: #e6eef8;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+
+    .app {
+      width:900px;
+      max-width:100%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border:1px solid rgba(255,255,255,0.03);
+      border-radius:12px;
+      padding:22px;
+      box-shadow: 0 10px 30px rgba(2,6,23,0.7);
+      display:grid;
+      grid-template-columns: 260px 1fr;
+      gap:18px;
+      align-items:start;
+    }
+
+    .sidebar {
+      background: rgba(255,255,255,0.01);
+      padding:12px;
+      border-radius:8px;
+    }
+    h1{font-size:18px;margin:0 0 8px 0;}
+    p.small{font-size:13px;color:var(--muted);margin:8px 0 12px 0;}
+
+    .controls button{
+      display:block;
+      width:100%;
+      padding:10px 12px;
+      margin-bottom:8px;
+      border-radius:8px;
+      border:none;
+      background:rgba(125,211,252,0.08);
+      color:var(--accent);
+      cursor:pointer;
+    }
+
+    .main {
+      padding:10px;
+    }
+
+    .demo-note{
+      background: linear-gradient(90deg, rgba(255,99,71,0.06), rgba(125,211,252,0.03));
+      border:1px dashed rgba(255,255,255,0.04);
+      padding:12px;
+      border-radius:8px;
+      margin-bottom:12px;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .canvas-wrap{
+      display:flex;
+      gap:14px;
+      align-items:center;
+    }
+
+    #frogCanvas{
+      image-rendering: pixelated;
+      border-radius:8px;
+      background: #0b1220;
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.02);
+    }
+
+    .message {
+      flex:1;
+      background: rgba(255,255,255,0.02);
+      padding:14px;
+      border-radius:8px;
+      min-height:160px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      font-size:18px;
+      color:var(--muted);
+      text-align:center;
+    }
+
+    /* modal */
+    .modal-backdrop{
+      position:fixed;inset:0;
+      background:rgba(2,6,23,0.6);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:50;
+    }
+    .modal{
+      width:520px;
+      max-width:94%;
+      background: linear-gradient(180deg,#0b1220,#071021);
+      border-radius:12px;
+      padding:18px;
+      border:1px solid rgba(255,255,255,0.04);
+      box-shadow:0 20px 50px rgba(2,6,23,0.8);
+      color:#fff;
+    }
+    .modal h2{margin:0 0 6px 0;color:#fff;}
+    .modal p{margin:0 0 12px 0;color:var(--muted);}
+    .modal .danger{
+      background: linear-gradient(90deg, rgba(255,107,107,0.12), rgba(255,107,107,0.06));
+      color:#ffdbe0;
+      padding:12px;border-radius:8px;margin-bottom:10px;font-weight:700;
+      display:flex;gap:10px;align-items:center;justify-content:center;
+    }
+    .modal .close{
+      display:inline-block;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,0.03);cursor:pointer;border:none;color:var(--accent);
+    }
+
+    footer{grid-column:1/-1;margin-top:12px;font-size:12px;color:var(--muted);text-align:center;}
+    .kbd{background:rgba(255,255,255,0.03);padding:6px 8px;border-radius:6px;font-weight:700;color:var(--accent);display:inline-block;}
+  </style>
+</head>
+<body>
+  <div class="app" role="application" aria-labelledby="appTitle">
+    <div class="sidebar">
+      <h1 id="appTitle">Scam Detector — DEMO</h1>
+      <p class="small">This is <strong>only a simulation</strong> for a school project. It does NOT detect scams. Press the <span class="kbd">E</span> key to trigger the demo message. Do not publish as a real detector that will trick people.</p>
+
+      <div class="controls">
+        <button id="showDemoBtn">Show demo message (simulate)</button>
+        <button id="clearBtn">Clear message</button>
+      </div>
+
+      <div style="margin-top:10px;">
+        <strong>How it works</strong>
+        <p class="small">This demo listens for the E key and shows a visible warning. The pixel frog is rendered on the left. Use this for a clear, educational demo only.</p>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="demo-note">DEMO mode: clearly labeled. This project is intended to teach about phishing and scams — not to deceive people.</div>
+
+      <div class="canvas-wrap">
+        <canvas id="frogCanvas" width="256" height="256" style="width:256px;height:256px"></canvas>
+
+        <div id="messageBox" class="message">Press <span class="kbd">E</span> to simulate a scam warning.</div>
+      </div>
+
+      <footer>Demo: NOT a real detector • For school project / teaching only</footer>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-hidden="true">
+    <div class="modal" role="document">
+      <h2>DEMO Warning — Simulation</h2>
+      <p>This is a simulated warning for educational purposes only. It is <strong>not</strong> an actual scam detector.</p>
+
+      <div class="danger">⚠️ YOU ARE ABOUT TO GET SCAMMED — (SIMULATION)</div>
+
+      <p style="color:var(--muted);">Press the button below or press Esc to close this demo modal.</p>
+      <div style="text-align:right;margin-top:8px;">
+        <button id="modalClose" class="close">Close demo</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Pixel frog data (simple 16x16 palette-based sprite) ---
+    // color codes (transparent = null)
+    const frogPixels = [
+      "..............",
+      "....22..22....",
+      "...22222222...",
+      "..2222222222..",
+      "..2233333322..",
+      ".223333333322.",
+      ".233333333332.",
+      ".233333333332.",
+      ".233333333332.",
+      ".223333333322.",
+      "..2222222222..",
+      "...26666662...",
+      "....666666....",
+      ".....6666.....",
+      "......66......",
+      ".............."
+    ];
+    // Palette mapping digits -> color
+    const palette = {
+      "2": "#8bd14b", // light green (frog body)
+      "3": "#4c8b20", // dark green (shadow)
+      "6": "#ffd66b", // eye/yellow
+      "4": "#10202b", // outline/dark
+      ".": null
+    };
+
+    function drawPixelFrog(canvas, scale=16){
+      const ctx = canvas.getContext('2d');
+      const rows = frogPixels.length;
+      const cols = frogPixels[0].length;
+      canvas.width = cols * scale;
+      canvas.height = rows * scale;
+      // clear
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      // background subtle
+      ctx.fillStyle = "#071021";
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+
+      // draw pixels
+      for(let y=0;y<rows;y++){
+        const row = frogPixels[y];
+        for(let x=0;x<cols;x++){
+          const ch = row[x];
+          const color = palette[ch];
+          if(color){
+            ctx.fillStyle = color;
+            ctx.fillRect(x*scale, y*scale, scale, scale);
+          }
+        }
+      }
+
+      // Add crisp pixel scaling
+      ctx.imageSmoothingEnabled = false;
+    }
+
+    // Initialize
+    const canvas = document.getElementById('frogCanvas');
+    drawPixelFrog(canvas, 16);
+
+    // message box
+    const msgBox = document.getElementById('messageBox');
+    const modal = document.getElementById('modalBackdrop');
+    const showBtn = document.getElementById('showDemoBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const modalClose = document.getElementById('modalClose');
+
+    function showDemoMessage(){
+      // update message box text (clear label it's a simulation)
+      msgBox.innerHTML = '<span style="color:var(--danger);font-weight:900">SIMULATION:</span> You are about to get scammed (DEMO — not real)';
+      // show modal for emphasis
+      modal.style.display = 'flex';
+      modal.setAttribute('aria-hidden','false');
+    }
+
+    function clearMessage(){
+      msgBox.innerHTML = 'Press <span class="kbd">E</span> to simulate a scam warning.';
+      modal.style.display = 'none';
+      modal.setAttribute('aria-hidden','true');
+    }
+
+    // keyboard listener for 'e' or 'E'
+    window.addEventListener('keydown', (ev) => {
+      // ignore if typing in an input (no inputs here but safe)
+      const active = document.activeElement;
+      if(active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) return;
+
+      if(ev.key.toLowerCase() === 'e'){
+        ev.preventDefault();
+        showDemoMessage();
+      } else if(ev.key === 'Escape'){
+        clearMessage();
+      }
+    });
+
+    // UI buttons
+    showBtn.addEventListener('click', showDemoMessage);
+    clearBtn.addEventListener('click', clearMessage);
+    modalClose.addEventListener('click', clearMessage);
+
+    // clicking backdrop closes modal
+    modal.addEventListener('click', (e) => {
+      if(e.target === modal) clearMessage();
+    });
+
+    // accessibility: focus the close button when modal opens
+    const observer = new MutationObserver(() => {
+      if(modal.style.display === 'flex') modalClose.focus();
+    });
+    observer.observe(modal, {attributes:true,attributeFilter:['style']});
+  </script>
+</body>
+</html>
